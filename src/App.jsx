@@ -10,6 +10,7 @@ import ManageUsersPage from "./pages/ManageUsersPage";
 import ManagePrescriptionsPage from "./pages/ManagePrescriptionsPage";
 import Navbar from "./components/Navbar";
 import PrescriptionListPage from "./pages/PrescriptionListPage";
+import AuditLogPage from "./pages/AuditLogPage";
 
 function App() {
   return (
@@ -91,6 +92,11 @@ function App() {
     </PrivateRoute>
   }
 />
+<Route path="/audit-log" element={
+  <PrivateRoute allowedRoles={["ADMIN"]}>
+    <AuditLogPage />
+  </PrivateRoute>
+} />
         {/* Дефолтний редірект якщо шлях не знайдено */}
         <Route path="*" element={<LoginPage />} />
       </Routes>

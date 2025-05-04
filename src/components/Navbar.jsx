@@ -48,6 +48,7 @@ function Navbar() {
       { path: "/sales/history", label: "Історія продажів" },
       { path: "/users/manage", label: "Користувачі" },
       { path: "/prescriptions/all", label: "Всі рецепти" },
+      { path: "/audit-log", label: "Аудит" },
     ],
   };
 
