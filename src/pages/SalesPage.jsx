@@ -10,6 +10,8 @@ function SalesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+
   const [form, setForm] = useState({
     clientId: "",
   });
@@ -138,23 +140,61 @@ if (!clientId) {
 
       {/* Додавання медикаментів */}
       <div className="mb-6">
-        <h2 className="text-xl font-semibold mb-2">Додати медикамент</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {medications.map((med) => (
-            <div
-              key={med.id}
-              className="border p-2 rounded shadow hover:bg-gray-100 cursor-pointer"
-              onClick={() => addToCart(med)}
-            >
-              <div className="font-bold">{med.name}</div>
-              <div className="text-sm">{med.price} ₴</div>
-              {med.requiresPrescription && (
-                <div className="text-xs text-red-600">Потребує рецепт</div>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
+  <h2 className="text-xl font-semibold mb-4">Додати медикамент</h2>
+
+  {/* Поле пошуку */}
+  <input
+    type="text"
+    placeholder="Пошук медикаменту..."
+    className="mb-4 w-full md:w-1/3 p-2 border border-gray-300 rounded"
+    value={searchTerm}
+    onChange={(e) => setSearchTerm(e.target.value)}
+  />
+
+  {/* Таблиця в обмеженому контейнері */}
+  <div className="border rounded shadow overflow-hidden">
+    <table className="w-full">
+      <thead className="bg-gray-200 sticky top-0">
+        <tr>
+          <th className="p-2 text-left">Назва</th>
+          <th className="p-2 text-left">Ціна</th>
+          <th className="p-2 text-left">В наявності</th>
+          <th className="p-2 text-left">Рецепт</th>
+          <th className="p-2 text-left">Дії</th>
+        </tr>
+      </thead>
+    </table>
+    <div className="overflow-y-auto max-h-64">
+      <table className="w-full">
+        <tbody>
+          {medications
+            .filter((med) =>
+              med.name.toLowerCase().includes(searchTerm.toLowerCase())
+            )
+            .map((med) => (
+              <tr key={med.id} className="border-b hover:bg-gray-50">
+                <td className="p-2">{med.name}</td>
+                <td className="p-2">{med.price.toFixed(2)} ₴</td>
+                <td className="p-2">{med.stock}</td>
+                <td className="p-2">
+                  {med.requiresPrescription ? "Так" : "Ні"}
+                </td>
+                <td className="p-2">
+                  <button
+                    onClick={() => addToCart(med)}
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
+                  >
+                    Додати
+                  </button>
+                </td>
+              </tr>
+            ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
 
       {/* Кошик */}
       {cart.length > 0 && (

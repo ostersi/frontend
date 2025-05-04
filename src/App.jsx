@@ -10,6 +10,7 @@ import ManageUsersPage from "./pages/ManageUsersPage";
 import ManagePrescriptionsPage from "./pages/ManagePrescriptionsPage";
 import Navbar from "./components/Navbar";
 import PrescriptionListPage from "./pages/PrescriptionListPage";
+
 function App() {
   return (
     <div className="min-h-screen bg-gray-100">
