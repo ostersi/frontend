@@ -68,7 +68,7 @@ function App() {
   path="/users/manage"
   element={
     <PrivateRoute allowedRoles={["ADMIN"]}>
-      <ManageUsersPage />
+      <ManageUsersPage /> 
     </PrivateRoute>
   }
 />
