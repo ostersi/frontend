@@ -11,7 +11,7 @@ const modelOptions = [
   "Prescription"
 ];
 
-const actionOptions = ["CREATE", "UPDATE", "DELETE"];
+const actionOptions = ["CREATE", "UPDATE", "SOFT_DELETE"];
 
 function AuditLogPage() {
   const [logs, setLogs] = useState([]);
