@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "../api/axios";
+import ErrorMessage from "./ErrorMessage";
 
 function ClientModal({ onClose, onCreated }) {
   const [form, setForm] = useState({
@@ -8,13 +9,38 @@ function ClientModal({ onClose, onCreated }) {
   });
   const [anonymous, setAnonymous] = useState(false);
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (error) {
+      const timeout = setTimeout(() => setError(""), 3000);
+      return () => clearTimeout(timeout);
+    }
+  }, [error]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!anonymous) {
+      if (!form.fullName.trim()) {
+        setError("Поле 'ПІБ' обов’язкове.");
+        return;
+      }
+      if (!form.contactInfo.trim()) {
+        setError("Поле 'Контактна інформація' обов’язкове.");
+        return;
+      }
+    }
+
     try {
+      setIsSubmitting(true);
+
       const payload = anonymous
-        ? {} // Надсилаємо без полів — бекенд сам створить "Клієнт #..."
-        : form;
+        ? {} // Сервер сам сформує дані
+        : {
+            fullName: form.fullName.trim(),
+            contactInfo: form.contactInfo.trim(),
+          };
 
       const res = await axios.post("/clients", payload);
       onCreated(res.data);
@@ -22,6 +48,8 @@ function ClientModal({ onClose, onCreated }) {
     } catch (err) {
       console.error(err);
       setError("Не вдалося створити клієнта.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -69,23 +97,23 @@ function ClientModal({ onClose, onCreated }) {
             </>
           )}
 
-          {error && (
-            <div className="text-red-500 text-sm mb-2">{error}</div>
-          )}
+          <ErrorMessage message={error} />
 
-          <div className="flex justify-end gap-2">
+          <div className="flex justify-end gap-2 mt-4">
             <button
               type="button"
               onClick={onClose}
               className="px-4 py-2 bg-gray-300 rounded"
+              disabled={isSubmitting}
             >
               Скасувати
             </button>
             <button
               type="submit"
               className="px-4 py-2 bg-blue-500 text-white rounded"
+              disabled={isSubmitting}
             >
-              Зберегти
+              {isSubmitting ? "Збереження..." : "Зберегти"}
             </button>
           </div>
         </form>

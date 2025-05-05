@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "../api/axios";
+import ErrorMessage from "../components/ErrorMessage";
 
 function LoginPage() {
   const [email, setEmail] = useState("");
@@ -8,16 +9,26 @@ function LoginPage() {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => setError(""), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("/auth/login", { email, password });
+      const response = await axios.post("/auth/login", {
+        email: email.trim(),
+        password: password.trim(),
+      });
 
       localStorage.setItem("token", response.data.token);
       navigate("/medications");
     } catch (err) {
       console.error(err);
-      setError(err.response?.data?.message || "Помилка входу.");
+      setError(err.response?.data?.message || "Невірний email або пароль.");
     }
   };
 
@@ -29,9 +40,7 @@ function LoginPage() {
       >
         <h2 className="text-2xl font-bold mb-6 text-center">Вхід у систему</h2>
 
-        {error && (
-          <div className="bg-red-100 text-red-700 p-2 mb-4 rounded">{error}</div>
-        )}
+        <ErrorMessage message={error} />
 
         <div className="mb-4">
           <label className="block text-gray-700 mb-2" htmlFor="email">

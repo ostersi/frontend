@@ -2,6 +2,7 @@ import ClientModal from "../components/ClientModal";
 import { useEffect, useState } from "react";
 import axios from "../api/axios";
 import Select from "react-select";
+import ErrorMessage from "../components/ErrorMessage"; 
 
 function SalesPage() {
   const [clients, setClients] = useState([]);
@@ -115,12 +116,7 @@ function SalesPage() {
     <div className="p-4">
       <h1 className="text-2xl font-bold mb-6">Продаж медикаментів</h1>
 
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          <strong className="font-bold">Помилка: </strong>
-          <span className="block sm:inline">{error}</span>
-        </div>
-      )}
+      {error && <ErrorMessage message={error} />}
 
       {success && (
         <div className="bg-green-100 text-green-700 p-3 rounded mb-4">
