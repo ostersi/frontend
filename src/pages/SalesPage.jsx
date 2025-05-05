@@ -11,11 +11,7 @@ function SalesPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
-
-  const [form, setForm] = useState({
-    clientId: "",
-  });
-  
+  const [form, setForm] = useState({ clientId: "" });
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
@@ -38,6 +34,14 @@ function SalesPage() {
     fetchData();
   }, []);
 
+  // ⏳ Автоочищення повідомлення про помилку
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => setError(""), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
+
   const addToCart = (medication) => {
     const existing = cart.find((item) => item.medicationId === medication.id);
     if (existing) {
@@ -51,7 +55,12 @@ function SalesPage() {
     } else {
       setCart([
         ...cart,
-        { medicationId: medication.id, name: medication.name, quantity: 1, priceAtSale: medication.price },
+        {
+          medicationId: medication.id,
+          name: medication.name,
+          quantity: 1,
+          priceAtSale: medication.price,
+        },
       ]);
     }
   };
@@ -72,22 +81,19 @@ function SalesPage() {
   const handleSubmit = async () => {
     try {
       const clientId = form.clientId;
-
-if (!clientId) {
-  setError("Потрібно вибрати або створити клієнта.");
-  return;
-}
-
+      if (!clientId) {
+        setError("Потрібно вибрати або створити клієнта.");
+        return;
+      }
 
       await axios.post("/sales/new", {
-        clientId: parseInt(clientId), // <-- виправлено тут!
+        clientId: parseInt(clientId),
         items: cart.map((item) => ({
           medicationId: item.medicationId,
           quantity: item.quantity,
           priceAtSale: item.priceAtSale,
         })),
       });
-      
 
       setSuccess("Продаж успішно завершено!");
       setCart([]);
@@ -98,103 +104,117 @@ if (!clientId) {
     }
   };
 
-  const totalPrice = cart.reduce((acc, item) => acc + item.priceAtSale * item.quantity, 0);
+  const totalPrice = cart.reduce(
+    (acc, item) => acc + item.priceAtSale * item.quantity,
+    0
+  );
 
   if (loading) return <div className="p-4 text-center">Завантаження...</div>;
-  if (error) return <div className="p-4 text-center text-red-500">{error}</div>;
 
   return (
     <div className="p-4">
       <h1 className="text-2xl font-bold mb-6">Продаж медикаментів</h1>
 
-      {success && (
-        <div className="bg-green-100 text-green-700 p-3 rounded mb-4">{success}</div>
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          <strong className="font-bold">Помилка: </strong>
+          <span className="block sm:inline">{error}</span>
+        </div>
       )}
 
-<div className="mb-4">
-<label className="block mb-1 font-medium">Клієнт</label>
-<div className="flex gap-2 items-start">
-  <div className="flex-1">
-    <Select
-      options={clients.map((c) => ({
-        value: c.id,
-        label: c.fullName,
-      }))}
-      onChange={(selected) =>
-        setForm((prev) => ({ ...prev, clientId: selected?.value }))
-      }
-      placeholder="Пошук клієнта..."
-      isClearable
-    />
-  </div>
-  <button
-    type="button"
-    onClick={() => setShowModal(true)}
-    className="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded"
-  >
-    + Новий
-  </button>
-</div>
+      {success && (
+        <div className="bg-green-100 text-green-700 p-3 rounded mb-4">
+          {success}
+        </div>
+      )}
 
-</div>
+      <div className="mb-4">
+        <label className="block mb-1 font-medium">Клієнт</label>
+        <div className="flex gap-2 items-start">
+          <div className="flex-1">
+            <Select
+              options={clients.map((c) => ({
+                value: c.id,
+                label: c.fullName,
+              }))}
+              onChange={(selected) =>
+                setForm((prev) => ({ ...prev, clientId: selected?.value }))
+              }
+              placeholder="Пошук клієнта..."
+              isClearable
+            />
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowModal(true)}
+            className="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded"
+          >
+            + Новий
+          </button>
+        </div>
+      </div>
 
-      {/* Додавання медикаментів */}
+      {/* Пошук медикаменту */}
       <div className="mb-6">
-  <h2 className="text-xl font-semibold mb-4">Додати медикамент</h2>
+        <h2 className="text-xl font-semibold mb-4">Додати медикамент</h2>
 
-  {/* Поле пошуку */}
-  <input
-    type="text"
-    placeholder="Пошук медикаменту..."
-    className="mb-4 w-full md:w-1/3 p-2 border border-gray-300 rounded"
-    value={searchTerm}
-    onChange={(e) => setSearchTerm(e.target.value)}
-  />
+        <input
+          type="text"
+          placeholder="Пошук медикаменту..."
+          className="mb-4 w-full md:w-1/3 p-2 border border-gray-300 rounded"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
 
-  {/* Таблиця в обмеженому контейнері */}
-  <div className="border rounded shadow overflow-hidden">
-    <table className="w-full">
-      <thead className="bg-gray-200 sticky top-0">
-        <tr>
-          <th className="p-2 text-left">Назва</th>
-          <th className="p-2 text-left">Ціна</th>
-          <th className="p-2 text-left">В наявності</th>
-          <th className="p-2 text-left">Рецепт</th>
-          <th className="p-2 text-left">Дії</th>
-        </tr>
-      </thead>
-    </table>
-    <div className="overflow-y-auto max-h-64">
-      <table className="w-full">
-        <tbody>
-          {medications
-            .filter((med) =>
-              med.name.toLowerCase().includes(searchTerm.toLowerCase())
-            )
-            .map((med) => (
-              <tr key={med.id} className="border-b hover:bg-gray-50">
-                <td className="p-2">{med.name}</td>
-                <td className="p-2">{med.price.toFixed(2)} ₴</td>
-                <td className="p-2">{med.stock}</td>
-                <td className="p-2">
-                  {med.requiresPrescription ? "Так" : "Ні"}
-                </td>
-                <td className="p-2">
-                  <button
-                    onClick={() => addToCart(med)}
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
-                  >
-                    Додати
-                  </button>
-                </td>
+        <div className="border rounded shadow overflow-hidden">
+          <table className="w-full">
+            <thead className="bg-gray-200 sticky top-0">
+              <tr>
+                <th className="p-2 text-left">Назва</th>
+                <th className="p-2 text-left">Ціна</th>
+                <th className="p-2 text-left">В наявності</th>
+                <th className="p-2 text-left">Рецепт</th>
+                <th className="p-2 text-left">Дії</th>
               </tr>
-            ))}
-        </tbody>
-      </table>
-    </div>
-  </div>
-</div>
-
+            </thead>
+          </table>
+          <div className="overflow-y-auto max-h-64">
+            <table className="w-full">
+              <tbody>
+                {medications
+                  .filter((med) =>
+                    med.name
+                      .toLowerCase()
+                      .includes(searchTerm.toLowerCase())
+                  )
+                  .map((med) => (
+                    <tr
+                      key={med.id}
+                      className="border-b hover:bg-gray-50"
+                    >
+                      <td className="p-2">{med.name}</td>
+                      <td className="p-2">
+                        {med.price.toFixed(2)} ₴
+                      </td>
+                      <td className="p-2">{med.stock}</td>
+                      <td className="p-2">
+                        {med.requiresPrescription ? "Так" : "Ні"}
+                      </td>
+                      <td className="p-2">
+                        <button
+                          onClick={() => addToCart(med)}
+                          className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
+                        >
+                          Додати
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
 
       {/* Кошик */}
       {cart.length > 0 && (
@@ -211,7 +231,10 @@ if (!clientId) {
             </thead>
             <tbody>
               {cart.map((item) => (
-                <tr key={item.medicationId} className="border-b">
+                <tr
+                  key={item.medicationId}
+                  className="border-b"
+                >
                   <td className="p-2">{item.name}</td>
                   <td className="p-2">
                     <input
@@ -219,7 +242,10 @@ if (!clientId) {
                       min="1"
                       value={item.quantity}
                       onChange={(e) =>
-                        updateQuantity(item.medicationId, parseInt(e.target.value))
+                        updateQuantity(
+                          item.medicationId,
+                          parseInt(e.target.value)
+                        )
                       }
                       className="w-16 p-1 border rounded"
                     />
@@ -227,7 +253,9 @@ if (!clientId) {
                   <td className="p-2">{item.priceAtSale} ₴</td>
                   <td className="p-2">
                     <button
-                      onClick={() => removeFromCart(item.medicationId)}
+                      onClick={() =>
+                        removeFromCart(item.medicationId)
+                      }
                       className="text-red-500"
                     >
                       Видалити
@@ -250,16 +278,19 @@ if (!clientId) {
           </button>
         </div>
       )}
-      {showModal && (
-  <ClientModal
-    onClose={() => setShowModal(false)}
-    onCreated={(newClient) => {
-      setClients((prev) => [...prev, newClient]);
-      setForm((prev) => ({ ...prev, clientId: newClient.id }));
-    }}
-  />
-)}
 
+      {showModal && (
+        <ClientModal
+          onClose={() => setShowModal(false)}
+          onCreated={(newClient) => {
+            setClients((prev) => [...prev, newClient]);
+            setForm((prev) => ({
+              ...prev,
+              clientId: newClient.id,
+            }));
+          }}
+        />
+      )}
     </div>
   );
 }
