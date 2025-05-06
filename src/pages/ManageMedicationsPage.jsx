@@ -41,6 +41,9 @@ function ManageMedicationsPage() {
         ...form,
         stock: parseInt(form.stock),
         price: parseFloat(form.price),
+        expirationDate: form.expirationDate
+    ? new Date(form.expirationDate)
+    : null,
       };
 
       if (editingId) {
@@ -55,6 +58,7 @@ function ManageMedicationsPage() {
         stock: "",
         price: "",
         requiresPrescription: false,
+        expirationDate: "",
       });
       setEditingId(null);
       fetchMedications();
@@ -71,6 +75,9 @@ function ManageMedicationsPage() {
       stock: med.stock,
       price: med.price,
       requiresPrescription: med.requiresPrescription,
+      expirationDate: med.expirationDate
+      ? new Date(med.expirationDate).toISOString().split("T")[0] // 🧠 ISO to YYYY-MM-DD
+      : "",
     });
     setEditingId(med.id);
   };
@@ -94,7 +101,18 @@ function ManageMedicationsPage() {
       setSortAsc(true);
     }
   };
-
+  const getExpirationStatus = (expirationDate) => {
+    if (!expirationDate) return null;
+  
+    const today = new Date();
+    const expDate = new Date(expirationDate);
+    const diffDays = Math.ceil((expDate - today) / (1000 * 60 * 60 * 24));
+  
+    if (diffDays <= 0) return "expired"; // прострочено
+    if (diffDays <= 30) return "warning"; // < 30 днів
+    return "ok";
+  };
+    
   const filtered = medications
     .filter((m) => m.name.toLowerCase().includes(searchTerm.toLowerCase()))
     .sort((a, b) => {
@@ -164,6 +182,17 @@ function ManageMedicationsPage() {
             className="w-full p-2 border border-gray-300 rounded"
           />
         </div>
+        <div className="mb-4">
+  <label className="block mb-1 font-medium">Термін придатності</label>
+  <input
+    type="date"
+    value={form.expirationDate}
+    onChange={(e) =>
+      setForm({ ...form, expirationDate: e.target.value })
+    }
+    className="w-full p-2 border border-gray-300 rounded"
+  />
+</div>
 
         <div className="mb-4 flex items-center gap-2">
           <input
@@ -174,6 +203,7 @@ function ManageMedicationsPage() {
               setForm({ ...form, requiresPrescription: e.target.checked })
             }
           />
+          
           <label htmlFor="requiresPrescription">Потребує рецепт</label>
         </div>
 
@@ -205,6 +235,7 @@ function ManageMedicationsPage() {
                 { key: "description", label: "Опис" },
                 { key: "stock", label: "Кількість" },
                 { key: "price", label: "Ціна" },
+                { key: "expirationDate", label: "Термін придатності" },
               ].map(({ key, label }) => (
                 <th
                   key={key}
@@ -223,10 +254,30 @@ function ManageMedicationsPage() {
               <tr key={med.id} className="border-b">
                 <td className="p-3">{med.name}</td>
                 <td className="p-3">{med.description}</td>
-                <td className="p-3">{med.stock}</td>
-                <td className="p-3">{med.price} ₴</td>
-                <td className="p-3">{med.requiresPrescription ? "Так" : "Ні"}</td>
-                <td className="p-3 flex gap-2">
+                <td className="p-3 text-center">{med.stock}</td>
+                <td className="p-3 text-center">{med.price} ₴</td>
+                <td className="p-3 text-center">
+  {med.expirationDate ? (
+    <span
+      className={`px-2 py-1 rounded text-white text-xs ${
+        getExpirationStatus(med.expirationDate) === "expired"
+          ? "bg-red-600"
+          : getExpirationStatus(med.expirationDate) === "warning"
+          ? "bg-yellow-500"
+          : "bg-green-500"
+      }`}
+    >
+      {new Date(med.expirationDate).toLocaleDateString()}
+    </span>
+  ) : (
+    "-"
+  )}
+</td>
+
+
+
+                <td className="p-3 text-center">{med.requiresPrescription ? "Так" : "Ні"}</td>
+                <td className="p-3 flex gap-2 ">
                   <button
                     onClick={() => handleEdit(med)}
                     className="bg-yellow-400 hover:bg-yellow-500 text-white py-1 px-3 rounded"

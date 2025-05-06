@@ -16,7 +16,14 @@ function MedicationsPage() {
     const fetchMedications = async () => {
       try {
         const res = await axios.get("/medications");
-        setMedications(res.data);
+        const today = new Date();
+
+      const filtered = res.data.filter((med) => {
+        if (!med.expirationDate) return true; 
+        return new Date(med.expirationDate) >= today;
+      });
+
+      setMedications(filtered);
       } catch (err) {
         console.error("Помилка завантаження медикаментів:", err);
         setError("Не вдалося завантажити медикаменти.");
@@ -112,7 +119,7 @@ function MedicationsPage() {
                   {label} {sortKey === key ? (sortAsc ? "▲" : "▼") : ""}
                 </th>
               ))}
-              <th className="p-3">Рецепт</th>
+              <th className="p-3 ">Рецепт</th>
             </tr>
           </thead>
           <tbody>
@@ -120,9 +127,9 @@ function MedicationsPage() {
               <tr key={med.id} className="border-b">
                 <td className="p-3">{med.name}</td>
                 <td className="p-3">{med.description}</td>
-                <td className="p-3">{med.stock}</td>
-                <td className="p-3">{med.price.toFixed(2)} ₴</td>
-                <td className="p-3">
+                <td className="p-3 text-center">{med.stock}</td>
+                <td className="p-3 text-center">{med.price.toFixed(2)} ₴</td>
+                <td className="p-3 text-center">
                   {med.requiresPrescription ? "✅" : "❌"}
                 </td>
               </tr>

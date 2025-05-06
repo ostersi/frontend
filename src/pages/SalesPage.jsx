@@ -162,54 +162,46 @@ function SalesPage() {
           onChange={(e) => setSearchTerm(e.target.value)}
         />
 
-        <div className="border rounded shadow overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-gray-200 sticky top-0">
-              <tr>
-                <th className="p-2 text-left">Назва</th>
-                <th className="p-2 text-left">Ціна</th>
-                <th className="p-2 text-left">В наявності</th>
-                <th className="p-2 text-left">Рецепт</th>
-                <th className="p-2 text-left">Дії</th>
-              </tr>
-            </thead>
-          </table>
-          <div className="overflow-y-auto max-h-64">
-            <table className="w-full">
-              <tbody>
-                {medications
-                  .filter((med) =>
-                    med.name
-                      .toLowerCase()
-                      .includes(searchTerm.toLowerCase())
-                  )
-                  .map((med) => (
-                    <tr
-                      key={med.id}
-                      className="border-b hover:bg-gray-50"
-                    >
-                      <td className="p-2">{med.name}</td>
-                      <td className="p-2">
-                        {med.price.toFixed(2)} ₴
-                      </td>
-                      <td className="p-2">{med.stock}</td>
-                      <td className="p-2">
-                        {med.requiresPrescription ? "Так" : "Ні"}
-                      </td>
-                      <td className="p-2">
-                        <button
-                          onClick={() => addToCart(med)}
-                          className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
-                        >
-                          Додати
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+<div className="border rounded shadow overflow-hidden">
+  <div className="overflow-y-auto max-h-64">
+    <table className="w-full">
+      <thead className="bg-gray-200 sticky top-0 z-10">
+        <tr>
+          <th className="p-2 text-left">Назва</th>
+          <th className="p-2 text-left">Ціна</th>
+          <th className="p-2 text-left">В наявності</th>
+          <th className="p-2 text-left">Рецепт</th>
+          <th className="p-2 text-left">Дії</th>
+        </tr>
+      </thead>
+      <tbody>
+        {medications
+          .filter((med) =>
+            med.name.toLowerCase().includes(searchTerm.toLowerCase())
+          )
+          .map((med) => (
+            <tr key={med.id} className="border-b hover:bg-gray-50">
+              <td className="p-2">{med.name}</td>
+              <td className="p-2">{med.price.toFixed(2)} ₴</td>
+              <td className="p-2">{med.stock}</td>
+              <td className="p-2">
+                {med.requiresPrescription ? "Так" : "Ні"}
+              </td>
+              <td className="p-2">
+                <button
+                  onClick={() => addToCart(med)}
+                  className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
+                >
+                  Додати
+                </button>
+              </td>
+            </tr>
+          ))}
+      </tbody>
+    </table>
+  </div>
+</div>
+
       </div>
 
       {/* Кошик */}
@@ -257,7 +249,7 @@ function SalesPage() {
                       Видалити
                     </button>
                   </td>
-                </tr>
+                </tr> 
               ))}
             </tbody>
           </table>
